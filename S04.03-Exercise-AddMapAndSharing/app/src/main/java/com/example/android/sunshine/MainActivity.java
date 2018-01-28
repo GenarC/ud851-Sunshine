@@ -20,6 +20,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.ShareCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -215,14 +216,37 @@ public class MainActivity extends AppCompatActivity implements ForecastAdapterOn
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
-        if (id == R.id.action_refresh) {
-            mForecastAdapter.setWeatherData(null);
-            loadWeatherData();
-            return true;
-        }
+        //if (id == R.id.action_refresh) {
+        //    mForecastAdapter.setWeatherData(null);
+        //    loadWeatherData();
+        //    return true;
+        //}
 
         // TODO (2) Launch the map when the map menu item is clicked
 
+        switch (id) {
+            case R.id.action_refresh:
+                mForecastAdapter.setWeatherData(null);
+                loadWeatherData();
+                break;
+            case R.id.action_openMap:
+                String address = "sisli/istanbul";
+                Uri geoUri = Uri.parse("geo:0,0?q=" + address);
+
+                //Uri geoUris = new Uri.Builder()
+                //        .scheme("geo")
+                //        .path("0,0")
+                //        .query(address)
+                //        .build();
+
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(geoUri);
+
+                if(intent.resolveActivity(getPackageManager()) != null){
+                    startActivity(intent);
+                }
+                break;
+        }
         return super.onOptionsItemSelected(item);
     }
 }
