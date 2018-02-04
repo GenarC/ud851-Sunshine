@@ -15,6 +15,8 @@
  */
 package com.example.android.sunshine.data;
 
+import android.provider.BaseColumns;
+
 /**
  * Defines table and column names for the weather database. This class is not necessary, but keeps
  * the code organized.
