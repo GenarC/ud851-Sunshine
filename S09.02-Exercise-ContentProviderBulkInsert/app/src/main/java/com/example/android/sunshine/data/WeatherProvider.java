@@ -319,31 +319,20 @@ public class WeatherProvider extends ContentProvider {
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
 
         int match = sUriMatcher.match(uri);
-        int weathersDeleted; // starts as 0
-
-        // Write the code to delete a single row of data
-        // [Hint] Use selections to delete an item by its row ID
+        int weathersDeleted;
         switch (match) {
-            // Handle the single item case, recognized by the ID included in the URI path
             case CODE_WEATHER:
-                // Get the task ID from the URI path
-                // Use selections/selectionArgs to filter for this ID
                 weathersDeleted = db.delete(TABLE_NAME, selection, selectionArgs);
                 break;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
-
-        // Notify the resolver of a change and return the number of items deleted
         if (weathersDeleted != 0) {
-            // A task was deleted, set notification
             getContext().getContentResolver().notifyChange(uri, null);
         }
 
-        // Return the number of tasks deleted
         return weathersDeleted;
 
-        //throw new RuntimeException("Student, you need to implement the delete method!");
     }
 
     /**
