@@ -20,8 +20,13 @@ import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+
+import com.example.android.sunshine.utilities.SunshineDateUtils;
+
+import static com.example.android.sunshine.data.WeatherContract.WeatherEntry.TABLE_NAME;
 
 /**
  * This class serves as the ContentProvider for all of Sunshine's data. This class allows us to
@@ -138,7 +143,43 @@ public class WeatherProvider extends ContentProvider {
      */
     @Override
     public int bulkInsert(@NonNull Uri uri, @NonNull ContentValues[] values) {
-        throw new RuntimeException("Student, you need to implement the bulkInsert method!");
+        final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
+
+        int match = sUriMatcher.match(uri);
+
+        switch (match){
+            case CODE_WEATHER:
+                db.beginTransaction();
+                int insertedRowCount = 0;
+
+                try{
+                    for (ContentValues cv: values) {
+
+                        long date = cv.getAsLong(WeatherContract.WeatherEntry.COLUMN_DATE);
+                        if(!SunshineDateUtils.isDateNormalized(date)){
+                            throw new IllegalArgumentException("Date must be normalized!");
+                        }
+                        long id = db.insert(
+                                TABLE_NAME,
+                                null,cv);
+                        if(id != -1){
+                            insertedRowCount++;
+                        }
+                    }
+                    db.setTransactionSuccessful();
+                }finally{
+                    db.endTransaction();
+                }
+
+                if(insertedRowCount > 0){
+                    getContext().getContentResolver().notifyChange(uri,null);
+                }
+                return insertedRowCount;
+
+            default: return super.bulkInsert(uri, values);
+        }
+
+        //throw new RuntimeException("Student, you need to implement the bulkInsert method!");
 
 //          TODO (2) Only perform our implementation of bulkInsert if the URI matches the CODE_WEATHER code
 
@@ -206,7 +247,7 @@ public class WeatherProvider extends ContentProvider {
 
                 cursor = mOpenHelper.getReadableDatabase().query(
                         /* Table we are going to query */
-                        WeatherContract.WeatherEntry.TABLE_NAME,
+                        TABLE_NAME,
                         /*
                          * A projection designates the columns we want returned in our Cursor.
                          * Passing null will return all columns of data within the Cursor.
@@ -245,7 +286,7 @@ public class WeatherProvider extends ContentProvider {
              */
             case CODE_WEATHER: {
                 cursor = mOpenHelper.getReadableDatabase().query(
-                        WeatherContract.WeatherEntry.TABLE_NAME,
+                        TABLE_NAME,
                         projection,
                         selection,
                         selectionArgs,
@@ -274,7 +315,35 @@ public class WeatherProvider extends ContentProvider {
      */
     @Override
     public int delete(@NonNull Uri uri, String selection, String[] selectionArgs) {
-        throw new RuntimeException("Student, you need to implement the delete method!");
+
+        final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
+
+        int match = sUriMatcher.match(uri);
+        int weathersDeleted; // starts as 0
+
+        // Write the code to delete a single row of data
+        // [Hint] Use selections to delete an item by its row ID
+        switch (match) {
+            // Handle the single item case, recognized by the ID included in the URI path
+            case CODE_WEATHER:
+                // Get the task ID from the URI path
+                // Use selections/selectionArgs to filter for this ID
+                weathersDeleted = db.delete(TABLE_NAME, selection, selectionArgs);
+                break;
+            default:
+                throw new UnsupportedOperationException("Unknown uri: " + uri);
+        }
+
+        // Notify the resolver of a change and return the number of items deleted
+        if (weathersDeleted != 0) {
+            // A task was deleted, set notification
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
+
+        // Return the number of tasks deleted
+        return weathersDeleted;
+
+        //throw new RuntimeException("Student, you need to implement the delete method!");
     }
 
     /**
