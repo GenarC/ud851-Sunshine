@@ -121,9 +121,14 @@ public static UriMatcher buildUriMatcher() {
                         sortOrder);
                 break;
             case CODE_WEATHER_WITH_DATE:
-                String id = uri.getPathSegments().get(1);
+                String date = uri.getPathSegments().get(1);
                 // Use selections/selectionArgs to filter for this ID
-                cursor = db.query(TABLE_NAME,projection,"_id=?",new String[]{id},null,null,null);
+                cursor = db.query(TABLE_NAME,projection,
+                        WeatherContract.WeatherEntry.COLUMN_DATE +"=?",
+                        new String[]{date},
+                        null,
+                        null,
+                        sortOrder);
                 break;
             default: throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
